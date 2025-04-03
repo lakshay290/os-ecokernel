@@ -1,154 +1,64 @@
-import os
-import time
-import psutil
-import datetime
-import tkinter as tk
-from tkinter import ttk, messagebox
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+# EcoKernel Process Monitor
+ 
+*A lightweight, intelligent process monitoring tool for Windows*
 
-class EcoKernelGUI:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("EcoKernel Process Monitor")
-        self.root.geometry("800x600")
+## 🌟 Overview
+**EcoKernel Process Monitor** is an advanced system monitoring tool designed to track real-time CPU, memory, and disk usage. It provides graphical analysis, logging capabilities, and system optimization suggestions to enhance performance and ensure smooth operation.
 
-        # Create a frame for system info
-        self.system_frame = ttk.LabelFrame(self.root, text="System Information")
-        self.system_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+## 🔥 Key Features
+- **Real-Time System Monitoring** – Tracks CPU, memory, and disk usage dynamically.
+- **Graphical Performance Analysis** – Displays live system statistics with Matplotlib.
+- **Logging & Reporting** – Captures and stores system performance data.
+- **Optimization Suggestions** – Identifies high-resource processes and recommends optimizations.
+- **Remote Monitoring** – Securely access system stats via SSH or a web dashboard.
+- **Customizable UI** – Dark mode and theme customization for a better user experience.
 
-        # Labels for system info
-        self.cpu_label = ttk.Label(self.system_frame, text="CPU Usage: 0%")
-        self.cpu_label.pack(pady=5)
+## 🚀 Technologies Used
+- **Python** – Core language for development.
+- **psutil** – Retrieves system metrics.
+- **tkinter** – GUI framework for user-friendly interaction.
+- **matplotlib** – Generates real-time graphs.
+- **logging** – Stores and manages logs.
+- **csv** – Exports structured reports.
+- **socket & paramiko** – Enables remote monitoring and secure data transmission.
 
-        self.memory_label = ttk.Label(self.system_frame, text="Memory Usage: 0%")
-        self.memory_label.pack(pady=5)
+## 🛠 Installation
+### Prerequisites:
+- Python 3.8+
+- Required Python libraries: `psutil`, `tkinter`, `matplotlib`, `logging`, `csv`, `socket`, `paramiko`
 
-        self.disk_label = ttk.Label(self.system_frame, text="Disk Usage: 0%")
-        self.disk_label.pack(pady=5)
+### Steps:
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/EcoKernel-Process-Monitor.git
+cd EcoKernel-Process-Monitor
 
-        # Create a frame for process info
-        self.process_frame = ttk.LabelFrame(self.root, text="Top Processes")
-        self.process_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+# Install dependencies
+pip install -r requirements.txt
 
-        # Treeview for processes
-        self.process_tree = ttk.Treeview(self.process_frame, columns=("PID", "Name", "User ", "CPU %", "Memory %"), show="headings")
-        self.process_tree.heading("PID", text="PID")
-        self.process_tree.heading("Name", text="Name")
-        self.process_tree.heading("User ", text="User ")
-        self.process_tree.heading("CPU %", text="CPU %")
-        self.process_tree.heading("Memory %", text="Memory %")
-        self.process_tree.pack(fill=tk.BOTH, expand=True)
+# Run the application
+python ecokernel.py
+```
 
-        # Create a frame for graphs
-        self.graph_frame = ttk.LabelFrame(self.root, text="Usage Graphs")
-        self.graph_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+## 📊 Usage
+1. **Start the application** – Launch `ecokernel.py`.
+2. **View system stats** – Monitor real-time CPU, memory, and disk usage.
+3. **Analyze performance** – Check graphical trends and logs.
+4. **Optimize system** – Follow AI-driven suggestions for performance improvements.
+5. **Enable remote monitoring** – Configure SSH for multi-device tracking.
 
-        # Create a figure for the plot
-        self.fig, self.ax = plt.subplots(2, 1, figsize=(8, 4))
-        self.cpu_line, = self.ax[0].plot([], [], 'r-', label='CPU Usage')
-        self.memory_line, = self.ax[1].plot([], [], 'b-', label='Memory Usage')
-        self.ax[0].set_ylim(0, 100)
-        self.ax[1].set_ylim(0, 100)
-        self.ax[0].set_title('CPU Usage Over Time')
-        self.ax[1].set_title('Memory Usage Over Time')
-        self.ax[0].set_ylabel('Percent %')
-        self.ax[1].set_ylabel('Percent %')
-        self.ax[1].set_xlabel('Time (last 30 readings)')
-        self.ax[0].legend()
-        self.ax[1].legend()
+## 🔮 Future Enhancements
+- **Cloud-Based Monitoring** – Sync data with cloud dashboards.
+- **AI-Based Predictive Analysis** – Machine learning for trend predictions.
+- **Mobile App Support** – Monitor system health on the go.
 
-        # Embed the figure in Tkinter
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.graph_frame)
-        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+## 🤝 Contributing
+Pull requests are welcome! Feel free to fork the repository and suggest improvements.
 
-        # Initialize data
-        self.cpu_history = []
-        self.memory_history = []
+## 📜 License
+This project is licensed under the MIT License. See `LICENSE` for details.
 
-        # Start the update loop
-        self.update_data()
+---
+👨‍💻 **Developed by Lakshay Bishnoi and Yash**  
 
-    def update_data(self):
-        """Update all data from the system"""
-        try:
-            # Get system info
-            cpu_percent = psutil.cpu_percent(interval=1)
-            memory = psutil.virtual_memory()
-            disk = psutil.disk_usage('/')
 
-            # Update labels
-            self.cpu_label.config(text=f"CPU Usage: {cpu_percent:.1f}%")
-            self.memory_label.config(text=f"Memory Usage: {memory.percent:.1f}%")
-            self.disk_label.config(text=f"Disk Usage: {disk.percent:.1f}%")
-
-            # Update history for graphs
-            self.cpu_history.append(cpu_percent)
-            self.memory_history.append(memory.percent)
-
-            # Keep only the last 30 readings
-            if len(self.cpu_history) > 30:
-                self.cpu_history.pop(0)
-            if len(self.memory_history) > 30:
-                self.memory_history.pop(0)
-
-            # Update graphs
-            self.cpu_line.set_xdata(range(len(self.cpu_history)))
-            self.cpu_line.set_ydata(self.cpu_history)
-            self.memory_line.set_xdata(range(len(self.memory_history)))
-            self.memory_line.set_ydata(self.memory_history)
-            self.ax[0].set_xlim(0, 30)
-            self.ax[1].set_xlim(0, 30)
-            self.canvas.draw()
-
-            # Update process list
-            self.update_process_list()
-
-            # Schedule the next update
-            self.root.after(2000, self.update_data)  # Update every 2 seconds
-
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to update system data: {str(e)}")
-
-    def update_process_list(self):
-        """Update the process list in the GUI"""
-        # Clear the current list
-        for item in self.process_tree.get_children():
-            self.process_tree.delete(item)
-
-        # Get process data
-        processes = self.get_process_info()
-
-        # Sort processes by CPU usage
-        sorted_processes = sorted(processes.values(), key=lambda x: x.get('cpu_percent', 0), reverse=True)
-
-        # Add the top processes to the list
-        for proc in sorted_processes[:10]:  # Limit to top 10 processes
-            self.process_tree.insert("", "end", values=(
-                proc['pid'],
-                proc['name'],
-                proc.get('username', 'Unknown'),
-                f"{proc.get('cpu_percent', 0):.1f}",
-                f"{proc.get('memory_percent', 0):.1f}"
-            ))
-
-    def get_process_info(self):
-        """Get information about all running processes"""
-        processes = {}
-        for proc in psutil.process_iter():
-            try:
-                # Get process info
-                process_info = proc.as_dict(attrs=['pid', 'name', 'username', 'status', 'cpu_percent', 'memory_percent'])
-                processes[proc.pid] = process_info
-            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                pass
-        return processes
-
-def main():
-    """Main function to run the EcoKernel GUI"""
-    root = tk.Tk()
-    app = EcoKernelGUI(root)
-    root.mainloop()
-
-if __name__ == "__main__":
-    main()
